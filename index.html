@@ -4,28 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<script>
-  // Cor da barra de status (iOS/Android) acompanha o perfil. iOS reage melhor quando a meta é recriada.
-  window.setThemeColor = function (color) {
-    try {
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.remove(); });
-      var m = document.createElement("meta");
-      m.name = "theme-color"; m.content = color;
-      document.head.appendChild(m);
-    } catch (e) {}
-  };
-  try {
-    var g = localStorage.getItem("minha_estante_gender");
-    if (!g) {
-      var saved = JSON.parse(localStorage.getItem("minha_estante_login") || "null");
-      g = saved && saved.user && saved.user.user_metadata && saved.user.user_metadata.gender;
-    }
-    if (g === "masculino") {
-      document.documentElement.classList.add("user-masc");
-      window.setThemeColor("#ffffff");
-    }
-  } catch (e) {}
-</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Estante">
