@@ -76,7 +76,7 @@
 }
 
 /* Perfil masculino: rosa vira azul em todo o app */
-body.user-masc {
+html.user-masc, body.user-masc {
   --rose: #b4cdf5;
   --rose-deep: #5b80d4;
   --heart: #5b80d4;
@@ -96,7 +96,7 @@ html, body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: var(--bg-top); }
 
 body {
   background:
@@ -2461,11 +2461,11 @@ function afterLogin(authData) {
 
 function applyGender(gender) {
   // Aplica classe no body pra reskinning de cores rosa → azul
-  if (gender === "masculino") {
-    document.body.classList.add("user-masc");
-  } else {
-    document.body.classList.remove("user-masc");
-  }
+  const isMasc = gender === "masculino";
+  document.body.classList.toggle("user-masc", isMasc);
+  document.documentElement.classList.toggle("user-masc", isMasc);
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute("content", isMasc ? "#dfe8fa" : "#f6e2f6");
   
   const el = document.getElementById("heroWord");
   if (!el) return;
@@ -2513,6 +2513,9 @@ function doLogout() {
   document.getElementById("userChip").style.display = "none";
   document.getElementById("userChipName").textContent = "—";
   document.body.classList.remove("user-masc");
+  document.documentElement.classList.remove("user-masc");
+  const tc2 = document.querySelector('meta[name="theme-color"]');
+  if (tc2) tc2.setAttribute("content", "#f6e2f6");
   state = { books: [], filter: "reading", covers: {}, selectedYear: null };
   renderAll();
   showLogin();
