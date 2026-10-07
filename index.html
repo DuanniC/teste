@@ -1445,6 +1445,35 @@ body.user-masc, html.user-masc { background-color: #ffffff; }
 }
 .edge-top { top: 0; height: max(env(safe-area-inset-top, 0px), 4px); }
 .edge-bottom { bottom: 0; height: max(env(safe-area-inset-bottom, 0px), 4px); }
+
+/* ---- Avatar do usuário: uma única inicial, redondo e centralizado ---- */
+.user-chip {
+  width: 38px; height: 38px; min-width: 38px; flex: 0 0 38px; aspect-ratio: 1 / 1;
+  border-radius: 50%; padding: 0; line-height: 1; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.user-chip > span:first-child {
+  display: block; width: auto; overflow: visible; text-align: center; line-height: 1;
+  font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0;
+}
+
+/* ---- Detalhes do livro: cabeçalho limpo, sem bloco sobreposto ---- */
+.book-view-card.has-cover-bg .book-view-main::before { display: none !important; }
+.book-view-card::after { display: none !important; }
+.book-view-card.has-cover-bg::before { opacity: .55; filter: blur(34px) saturate(1.3); }
+.book-view-card.has-cover-bg {
+  background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.80));
+  box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+}
+.book-view-card { padding: 16px; gap: 16px; border-radius: 24px; }
+.book-view-title { font-weight: 700; font-size: 24px; letter-spacing: -.4px; }
+.book-view-author { color: var(--ink-soft); }
+.book-view-info {
+  background: #fff; border: 1px solid var(--line); box-shadow: none;
+  padding: 13px 16px; border-radius: 18px;
+}
+.book-view-progress-edit .form-input { background: var(--cream-dark); border: 0; }
+.book-view-grid { gap: 8px; }
 </style>
 </head>
 <body>
@@ -2600,7 +2629,8 @@ function applySession(authData, options = {}) {
 
   STORAGE_KEY = `minha_estante_v3_${currentUser.id}`;
   document.getElementById("userChip").style.display = "flex";
-  document.getElementById("userChipName").textContent = currentUser.name;
+  document.getElementById("userChipName").textContent = (Array.from(String(currentUser.name || "?").trim())[0] || "?").toUpperCase();
+  document.getElementById("userChip").title = currentUser.name + " · Sair";
   applyGender(gender);
   hideLogin();
 
