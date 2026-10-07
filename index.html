@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f6e2f6">
+<meta name="theme-color" content="#ffffff">
 <script>
   // Cor da barra de status (iOS/Android) acompanha o perfil. iOS reage melhor quando a meta é recriada.
   window.setThemeColor = function (color) {
@@ -22,7 +22,7 @@
     }
     if (g === "masculino") {
       document.documentElement.classList.add("user-masc");
-      window.setThemeColor("#dfe8fa");
+      window.setThemeColor("#ffffff");
     }
   } catch (e) {}
 </script>
@@ -118,7 +118,7 @@ html, body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
-html { scroll-behavior: smooth; background: var(--bg-top); }
+html { scroll-behavior: smooth; background: #ffffff; }
 
 body {
   background:
@@ -1326,8 +1326,8 @@ body.user-masc .logo-mark::before { background-color: #fff; }
 /* =====================================================================
    Card "Lendo" v2 — dois layouts (Vitrine / Compacto), sem fundo de capa
    ===================================================================== */
-.reading-card, .reading-card.has-cover-bg {
-  --tint: #fbd8e5;
+.reading-card { --tint: #fbd8e5; }
+.reading-card:not(.has-cover-bg) {
   background: linear-gradient(180deg, var(--tint) 0, #fff 58%) !important;
   color: var(--ink);
 }
@@ -1335,7 +1335,7 @@ body.user-masc .logo-mark::before { background-color: #fff; }
 .reading-card.c-butter { --tint: #fbeabf; } .reading-card.c-sky { --tint: #d6e5fb; }
 .reading-card.c-sage { --tint: #d5ecdc; } .reading-card.c-peach { --tint: #fbdcc7; }
 .reading-card.c-mint { --tint: #cfeee4; } .reading-card.c-blush { --tint: #f8d9e8; }
-.reading-card::before, .reading-card::after { display: none !important; }
+.reading-card:not(.has-cover-bg)::before, .reading-card:not(.has-cover-bg)::after { display: none !important; }
 
 .reading-layout-btn {
   position: absolute; top: 12px; right: 12px; z-index: 5;
@@ -1371,8 +1371,10 @@ body.user-masc .reading-btn.primary { background: linear-gradient(135deg, #5b80d
 .reading-card.compact {
   flex-direction: row; text-align: left; align-items: center;
   padding: 16px; gap: 14px; border-radius: 26px;
-  background: #fff !important;
 }
+.reading-card.compact:not(.has-cover-bg) { background: #fff !important; }
+.reading-card.compact.has-cover-bg::before { background: linear-gradient(90deg, rgba(255,255,255,.62), rgba(255,255,255,.4)) !important; }
+.reading-card.compact.has-cover-bg.cover-is-dark::before { background: linear-gradient(90deg, rgba(36,30,74,.66), rgba(36,30,74,.45)) !important; }
 .reading-card.compact > .cover {
   width: 78px !important; height: 117px !important; transform: none;
   border-radius: 8px 12px 12px 8px !important;
@@ -1386,6 +1388,52 @@ body.user-masc .reading-btn.primary { background: linear-gradient(135deg, #5b80d
 .reading-card.compact .reading-actions { width: auto; }
 .reading-card.compact .reading-btn.primary { padding: 10px 16px; font-size: 12.5px; border-radius: 14px; }
 .reading-card.compact .reading-btn.primary .arrow { display: none; }
+
+/* ---- Sessão de leitura v2 ---- */
+.timer-overlay {
+  background:
+    radial-gradient(520px 380px at 100% -6%, rgba(224,112,155,.38), transparent 70%),
+    radial-gradient(420px 320px at -10% 105%, rgba(150,130,230,.28), transparent 70%),
+    linear-gradient(180deg, #403878 0%, #2a2457 100%);
+}
+body.user-masc .timer-overlay {
+  background:
+    radial-gradient(520px 380px at 100% -6%, rgba(106,143,224,.45), transparent 70%),
+    radial-gradient(420px 320px at -10% 105%, rgba(120,160,240,.25), transparent 70%),
+    linear-gradient(180deg, #2f4585 0%, #1b2a5c 100%);
+}
+.timer-header { margin-bottom: 0; }
+.timer-label { font-size: 13px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,.75); }
+.timer-center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 10px 0; }
+.timer-book-info { margin-bottom: 0; }
+.timer-cover-small {
+  width: 128px; border-radius: 6px 12px 12px 6px; margin-bottom: 18px;
+  box-shadow: 0 24px 44px rgba(0,0,0,.45), 0 0 60px rgba(255,255,255,.10);
+}
+.timer-book-title { font-size: 22px; font-weight: 700; padding: 0 8px; }
+.timer-book-author { margin-bottom: 0; }
+.timer-clock-card {
+  background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.14);
+  border-radius: 28px; padding: 18px 16px 16px; text-align: center;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.timer-status {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600;
+  letter-spacing: .6px; color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.12); padding: 5px 12px; border-radius: 100px;
+}
+.timer-status i { width: 8px; height: 8px; border-radius: 50%; background: #6fe0a0; animation: timerPulse 1.4s infinite; }
+.timer-status.paused i { background: #f0b445; animation: none; }
+@keyframes timerPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+.timer-display { font-size: 60px; font-weight: 300; letter-spacing: -1px; margin: 12px 0 6px; }
+.timer-clock-card .timer-book-pages { color: rgba(255,255,255,.7); font-weight: 500; letter-spacing: .3px; }
+.timer-actions { margin-top: 0; gap: 10px; max-width: 420px; }
+.timer-actions-row { display: grid; grid-template-columns: 1fr 1.25fr; gap: 10px; }
+.timer-btn { border-radius: 20px; padding: 17px 12px; }
+.timer-btn.primary { background: rgba(255,255,255,.95); color: var(--ink); }
+.timer-btn.done { background: linear-gradient(135deg, var(--rose-deep), #c4578a); }
+body.user-masc .timer-btn.done { background: linear-gradient(135deg, #5b80d4, #4560b8); box-shadow: 0 10px 24px rgba(69,96,184,.5); }
+.timer-btn.link { background: transparent; color: rgba(255,255,255,.65); padding: 10px; font-weight: 500; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -1935,23 +1983,30 @@ create policy "usuario ve sua wishlist" on wishlist
 <!-- TIMER OVERLAY (tela cheia) -->
 <div class="timer-overlay" id="timerOverlay">
   <div class="timer-header">
-    <div class="timer-label">sessão de leitura ✦</div>
+    <div class="timer-label">sessão de leitura</div>
     <button class="timer-close" onclick="minimizeTimer()" aria-label="Minimizar">×</button>
   </div>
-  
-  <div class="timer-book-info">
-    <div class="timer-cover-small" id="timerCover"></div>
-    <div class="timer-book-title" id="timerTitle">—</div>
-    <div class="timer-book-author" id="timerAuthor">—</div>
-    <div class="timer-book-pages" id="timerPages"></div>
+
+  <div class="timer-center">
+    <div class="timer-book-info">
+      <div class="timer-cover-small" id="timerCover"></div>
+      <div class="timer-book-title" id="timerTitle">—</div>
+      <div class="timer-book-author" id="timerAuthor">—</div>
+    </div>
+
+    <div class="timer-clock-card">
+      <div class="timer-status" id="timerStatus"><i></i><span>lendo agora</span></div>
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+      <div class="timer-book-pages" id="timerPages"></div>
+    </div>
   </div>
-  
-  <div class="timer-display" id="timerDisplay">00:00:00</div>
-  
+
   <div class="timer-actions">
-    <button class="timer-btn done" id="timerDoneBtn" onclick="stopTimer()">Feito ✦</button>
-    <button class="timer-btn primary" id="timerPauseBtn" onclick="toggleTimer()">Pausar</button>
-    <button class="timer-btn secondary" onclick="cancelTimer()">Cancelar sessão</button>
+    <div class="timer-actions-row">
+      <button class="timer-btn primary" id="timerPauseBtn" onclick="toggleTimer()">Pausar</button>
+      <button class="timer-btn done" id="timerDoneBtn" onclick="stopTimer()">Concluir ✦</button>
+    </div>
+    <button class="timer-btn link" onclick="cancelTimer()">Cancelar sessão</button>
   </div>
 </div>
 
@@ -2566,7 +2621,7 @@ function applyGender(gender) {
   try { localStorage.setItem("minha_estante_gender", isMasc ? "masculino" : "feminino"); } catch(e) {}
   document.body.classList.toggle("user-masc", isMasc);
   document.documentElement.classList.toggle("user-masc", isMasc);
-  window.setThemeColor(isMasc ? "#dfe8fa" : "#f6e2f6");
+  window.setThemeColor("#ffffff");
   
   const el = document.getElementById("heroWord");
   if (!el) return;
@@ -2616,7 +2671,7 @@ function doLogout() {
   document.body.classList.remove("user-masc");
   document.documentElement.classList.remove("user-masc");
   try { localStorage.removeItem("minha_estante_gender"); } catch(e) {}
-  window.setThemeColor("#f6e2f6");
+  window.setThemeColor("#ffffff");
   state = { books: [], filter: "reading", covers: {}, selectedYear: null };
   renderAll();
   showLogin();
@@ -4273,6 +4328,9 @@ function renderGenres() {
         card.className = `reading-card ${g.color}` + (getReadingLayout() === "compact" ? " compact" : "");
         const readingCover = getBookCover(book);
         if (readingCover) {
+          card.classList.add("has-cover-bg");
+          card.style.setProperty("--reading-cover-bg", `url("${String(readingCover).replace(/"/g, '%22')}")`);
+          applyReadingCardTheme(card, readingCover);
         }
         card.dataset.bookId = book.id;
         card.onclick = () => openBookViewModal(book.id);
@@ -4334,6 +4392,9 @@ function renderGenres() {
             if (!alreadyShowedSavedCover && meta.cover) {
               setBookCover(book, meta.cover);
               setCoverInstant(coverId, meta.cover, book, key);
+              card.classList.add("has-cover-bg");
+              card.style.setProperty("--reading-cover-bg", `url("${String(meta.cover).replace(/"/g, '%22')}")`);
+              applyReadingCardTheme(card, meta.cover);
             }
             // Aplica páginas se não tinha
             if (meta.pages && !book.pagesTotal) {
@@ -5150,6 +5211,11 @@ function updatePauseButton() {
   const btn = document.getElementById("timerPauseBtn");
   if (!btn || !timerState) return;
   btn.textContent = timerState.pausedAt ? "Retomar" : "Pausar";
+  const st = document.getElementById("timerStatus");
+  if (st) {
+    st.classList.toggle("paused", !!timerState.pausedAt);
+    st.querySelector("span").textContent = timerState.pausedAt ? "pausado" : "lendo agora";
+  }
 }
 
 function cancelTimer() {
