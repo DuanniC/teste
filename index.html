@@ -4,6 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
+<script>
+  // Cor da barra de status (iOS/Android) acompanha o perfil. iOS reage melhor quando a meta é recriada.
+  window.setThemeColor = function (color) {
+    try {
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.remove(); });
+      var m = document.createElement("meta");
+      m.name = "theme-color"; m.content = color;
+      document.head.appendChild(m);
+    } catch (e) {}
+  };
+  try {
+    var g = localStorage.getItem("minha_estante_gender");
+    if (!g) {
+      var saved = JSON.parse(localStorage.getItem("minha_estante_login") || "null");
+      g = saved && saved.user && saved.user.user_metadata && saved.user.user_metadata.gender;
+    }
+    if (g === "masculino") {
+      document.documentElement.classList.add("user-masc");
+      window.setThemeColor("#ffffff");
+    }
+  } catch (e) {}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Estante">
@@ -1412,9 +1434,21 @@ body.user-masc .timer-overlay {
 .timer-btn.done { background: linear-gradient(135deg, var(--rose-deep), #c4578a); }
 body.user-masc .timer-btn.done { background: linear-gradient(135deg, #5b80d4, #4560b8); box-shadow: 0 10px 24px rgba(69,96,184,.5); }
 .timer-btn.link { background: transparent; color: rgba(255,255,255,.65); padding: 10px; font-weight: 500; font-size: 13px; }
+
+/* ---- Barras do Safari (iOS 26 pinta com a cor das bordas da página) ----
+   Faixas fixas brancas no topo e na base + fundo branco explícito. */
+:root { color-scheme: light; }
+html, body { background-color: #ffffff; }
+body.user-masc, html.user-masc { background-color: #ffffff; }
+.edge-top, .edge-bottom {
+  position: fixed; left: 0; right: 0; z-index: 3; pointer-events: none; background: #ffffff;
+}
+.edge-top { top: 0; height: max(env(safe-area-inset-top, 0px), 4px); }
+.edge-bottom { bottom: 0; height: max(env(safe-area-inset-bottom, 0px), 4px); }
 </style>
 </head>
 <body>
+<div class="edge-top" aria-hidden="true"></div><div class="edge-bottom" aria-hidden="true"></div>
 
 <!-- SETUP SCREEN (aparece na primeira vez) -->
 <!-- LOGIN OVERLAY -->
