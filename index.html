@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f6e2f6">
+<script>
+  try { if (localStorage.getItem("minha_estante_gender") === "masculino") {
+    document.documentElement.classList.add("user-masc");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", "#dfe8fa");
+  } } catch(e) {}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Estante">
@@ -2295,6 +2301,14 @@ async function saveProfileGender() {
     });
     if (!resp.ok) throw new Error("Erro ao salvar");
     currentUser.gender = _selectedProfileGender;
+    // Atualiza o login guardado no aparelho, senão o F5 volta ao gênero antigo
+    try {
+      const saved = JSON.parse(localStorage.getItem(LOGIN_KEY) || "null");
+      if (saved && saved.user) {
+        saved.user.user_metadata = Object.assign({}, saved.user.user_metadata, { gender: _selectedProfileGender });
+        localStorage.setItem(LOGIN_KEY, JSON.stringify(saved));
+      }
+    } catch(e) {}
     applyGender(_selectedProfileGender);
     setSyncStatus("synced", "✦ perfil salvo");
     alert("Perfil atualizado ✦");
@@ -2462,6 +2476,7 @@ function afterLogin(authData) {
 function applyGender(gender) {
   // Aplica classe no body pra reskinning de cores rosa → azul
   const isMasc = gender === "masculino";
+  try { localStorage.setItem("minha_estante_gender", isMasc ? "masculino" : "feminino"); } catch(e) {}
   document.body.classList.toggle("user-masc", isMasc);
   document.documentElement.classList.toggle("user-masc", isMasc);
   const tc = document.querySelector('meta[name="theme-color"]');
@@ -2514,6 +2529,7 @@ function doLogout() {
   document.getElementById("userChipName").textContent = "—";
   document.body.classList.remove("user-masc");
   document.documentElement.classList.remove("user-masc");
+  try { localStorage.removeItem("minha_estante_gender"); } catch(e) {}
   const tc2 = document.querySelector('meta[name="theme-color"]');
   if (tc2) tc2.setAttribute("content", "#f6e2f6");
   state = { books: [], filter: "reading", covers: {}, selectedYear: null };
