@@ -5,10 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f6e2f6">
 <script>
-  try { if (localStorage.getItem("minha_estante_gender") === "masculino") {
-    document.documentElement.classList.add("user-masc");
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", "#dfe8fa");
-  } } catch(e) {}
+  // Cor da barra de status (iOS/Android) acompanha o perfil. iOS reage melhor quando a meta é recriada.
+  window.setThemeColor = function (color) {
+    try {
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.remove(); });
+      var m = document.createElement("meta");
+      m.name = "theme-color"; m.content = color;
+      document.head.appendChild(m);
+    } catch (e) {}
+  };
+  try {
+    var g = localStorage.getItem("minha_estante_gender");
+    if (!g) {
+      var saved = JSON.parse(localStorage.getItem("minha_estante_login") || "null");
+      g = saved && saved.user && saved.user.user_metadata && saved.user.user_metadata.gender;
+    }
+    if (g === "masculino") {
+      document.documentElement.classList.add("user-masc");
+      window.setThemeColor("#dfe8fa");
+    }
+  } catch (e) {}
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1306,6 +1322,70 @@ body.user-masc .logo-mark::before { background-color: #fff; }
 .genres > *:nth-child(2) { animation-delay: .05s; } .genres > *:nth-child(3) { animation-delay: .1s; } .genres > *:nth-child(n+4) { animation-delay: .14s; }
 @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
+
+/* =====================================================================
+   Card "Lendo" v2 — dois layouts (Vitrine / Compacto), sem fundo de capa
+   ===================================================================== */
+.reading-card, .reading-card.has-cover-bg {
+  --tint: #fbd8e5;
+  background: linear-gradient(180deg, var(--tint) 0, #fff 58%) !important;
+  color: var(--ink);
+}
+.reading-card.c-rose { --tint: #fbd8e5; } .reading-card.c-lavender { --tint: #e4daf8; }
+.reading-card.c-butter { --tint: #fbeabf; } .reading-card.c-sky { --tint: #d6e5fb; }
+.reading-card.c-sage { --tint: #d5ecdc; } .reading-card.c-peach { --tint: #fbdcc7; }
+.reading-card.c-mint { --tint: #cfeee4; } .reading-card.c-blush { --tint: #f8d9e8; }
+.reading-card::before, .reading-card::after { display: none !important; }
+
+.reading-layout-btn {
+  position: absolute; top: 12px; right: 12px; z-index: 5;
+  width: 36px; height: 36px; border-radius: 12px; border: 0; cursor: pointer;
+  background: rgba(255,255,255,.75); color: var(--ink); font-size: 16px;
+  box-shadow: var(--shadow-sm); display: grid; place-items: center;
+}
+.reading-layout-btn:active { transform: scale(.92); }
+
+.reading-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.reading-stat {
+  background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 9px 4px;
+  display: flex; flex-direction: column; gap: 2px; align-items: center; box-shadow: var(--shadow-sm);
+}
+.reading-stat b { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); }
+.reading-stat span { font-size: 10.5px; color: var(--ink-soft); }
+
+.reading-progress-bar { background: rgba(58,51,102,.10); }
+.reading-progress-fill { background: linear-gradient(90deg, var(--rose-deep), #c4578a); }
+body.user-masc .reading-progress-fill { background: linear-gradient(90deg, #6a8fe0, #4560b8); }
+
+.reading-btn.primary {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--ink); color: #fff; box-shadow: 0 10px 22px rgba(58,51,102,.30);
+}
+.reading-btn.primary .arrow {
+  width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.18);
+  display: grid; place-items: center; font-size: 13px;
+}
+body.user-masc .reading-btn.primary { background: linear-gradient(135deg, #5b80d4, #4560b8); box-shadow: 0 10px 22px rgba(69,96,184,.38); }
+
+/* ---- Layout compacto (estilo "Continue Reading") ---- */
+.reading-card.compact {
+  flex-direction: row; text-align: left; align-items: center;
+  padding: 16px; gap: 14px; border-radius: 26px;
+  background: #fff !important;
+}
+.reading-card.compact > .cover {
+  width: 78px !important; height: 117px !important; transform: none;
+  border-radius: 8px 12px 12px 8px !important;
+  box-shadow: 0 10px 20px rgba(36,30,74,.28);
+}
+.reading-card.compact .reading-info-side { align-items: stretch; gap: 8px; padding-right: 30px; }
+.reading-card.compact .reading-book-title { font-size: 17px; font-weight: 700; }
+.reading-card.compact .reading-book-author { margin-bottom: 4px; }
+.reading-card.compact .reading-progress-text { text-align: left; }
+.reading-card.compact .reading-stats { display: none; }
+.reading-card.compact .reading-actions { width: auto; }
+.reading-card.compact .reading-btn.primary { padding: 10px 16px; font-size: 12.5px; border-radius: 14px; }
+.reading-card.compact .reading-btn.primary .arrow { display: none; }
 </style>
 </head>
 <body>
@@ -2473,14 +2553,20 @@ function afterLogin(authData) {
   applySession(authData, { runInit: true });
 }
 
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && typeof currentUser !== "undefined" && currentUser) applyGender(currentUser.gender);
+});
+window.addEventListener("pageshow", () => {
+  if (typeof currentUser !== "undefined" && currentUser) applyGender(currentUser.gender);
+});
+
 function applyGender(gender) {
   // Aplica classe no body pra reskinning de cores rosa → azul
   const isMasc = gender === "masculino";
   try { localStorage.setItem("minha_estante_gender", isMasc ? "masculino" : "feminino"); } catch(e) {}
   document.body.classList.toggle("user-masc", isMasc);
   document.documentElement.classList.toggle("user-masc", isMasc);
-  const tc = document.querySelector('meta[name="theme-color"]');
-  if (tc) tc.setAttribute("content", isMasc ? "#dfe8fa" : "#f6e2f6");
+  window.setThemeColor(isMasc ? "#dfe8fa" : "#f6e2f6");
   
   const el = document.getElementById("heroWord");
   if (!el) return;
@@ -2530,8 +2616,7 @@ function doLogout() {
   document.body.classList.remove("user-masc");
   document.documentElement.classList.remove("user-masc");
   try { localStorage.removeItem("minha_estante_gender"); } catch(e) {}
-  const tc2 = document.querySelector('meta[name="theme-color"]');
-  if (tc2) tc2.setAttribute("content", "#f6e2f6");
+  window.setThemeColor("#f6e2f6");
   state = { books: [], filter: "reading", covers: {}, selectedYear: null };
   renderAll();
   showLogin();
@@ -4185,12 +4270,9 @@ function renderGenres() {
     if (showReadingCard) {
       reading.forEach(book => {
         const card = document.createElement("div");
-        card.className = `reading-card ${g.color}`;
+        card.className = `reading-card ${g.color}` + (getReadingLayout() === "compact" ? " compact" : "");
         const readingCover = getBookCover(book);
         if (readingCover) {
-          card.classList.add("has-cover-bg");
-          card.style.setProperty("--reading-cover-bg", `url("${String(readingCover).replace(/"/g, '%22')}")`);
-          applyReadingCardTheme(card, readingCover);
         }
         card.dataset.bookId = book.id;
         card.onclick = () => openBookViewModal(book.id);
@@ -4210,7 +4292,19 @@ function renderGenres() {
           `;
         }
         
+        const hasPages = book.pagesTotal && book.pagesTotal > 0;
+        const curPg = book.pagesCurrent || 0;
+        const pctNum = hasPages ? Math.round(Math.min(100, (curPg / book.pagesTotal) * 100)) : 0;
+        const statsHTML = `
+          <div class="reading-stats">
+            <div class="reading-stat"><b>${hasPages ? curPg : "—"}</b><span>${hasPages ? "de " + book.pagesTotal + " pág." : "páginas"}</span></div>
+            <div class="reading-stat"><b>${hasPages ? pctNum + "%" : "—"}</b><span>lido</span></div>
+            <div class="reading-stat"><b>${book.startDate ? book.startDate.split("-").reverse().slice(0,2).join("/") : "—"}</b><span>início</span></div>
+          </div>`;
+        const isCompact = getReadingLayout() === "compact";
+
         card.innerHTML = `
+          <button class="reading-layout-btn" title="Trocar visual" onclick="event.stopPropagation(); toggleReadingLayout()">${isCompact ? "▣" : "☰"}</button>
           <div class="cover" id="${coverId}">
             ${coverFallbackHTML(book, key)}
           </div>
@@ -4218,11 +4312,11 @@ function renderGenres() {
             <div>
               <div class="reading-book-title">${escapeHtml(book.t)}${favMark}</div>
               <div class="reading-book-author">${escapeHtml(book.a)}</div>
-              <div class="reading-meta">📖 ${dateText}</div>
               ${progressHTML}
             </div>
+            ${statsHTML}
             <div class="reading-actions">
-              <button class="reading-btn primary" onclick="event.stopPropagation(); startSession(${book.id})">Iniciar sessão ✦</button>
+              <button class="reading-btn primary" onclick="event.stopPropagation(); startSession(${book.id})">${isCompact ? "Continuar" : "Continuar lendo"} <span class="arrow">→</span></button>
             </div>
           </div>
         `;
@@ -4240,9 +4334,6 @@ function renderGenres() {
             if (!alreadyShowedSavedCover && meta.cover) {
               setBookCover(book, meta.cover);
               setCoverInstant(coverId, meta.cover, book, key);
-              card.classList.add("has-cover-bg");
-              card.style.setProperty("--reading-cover-bg", `url("${String(meta.cover).replace(/"/g, '%22')}")`);
-              applyReadingCardTheme(card, meta.cover);
             }
             // Aplica páginas se não tinha
             if (meta.pages && !book.pagesTotal) {
@@ -4933,6 +5024,14 @@ function saveTimerState() {
   } else {
     try { localStorage.removeItem(TIMER_KEY); } catch(e) {}
   }
+}
+
+function getReadingLayout() {
+  try { return localStorage.getItem("minha_estante_reading_layout") === "compact" ? "compact" : "vitrine"; } catch(e) { return "vitrine"; }
+}
+function toggleReadingLayout() {
+  try { localStorage.setItem("minha_estante_reading_layout", getReadingLayout() === "compact" ? "vitrine" : "compact"); } catch(e) {}
+  renderAll();
 }
 
 function startSession(bookId) {
