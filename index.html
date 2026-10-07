@@ -1443,8 +1443,8 @@ body.user-masc, html.user-masc { background-color: #ffffff; }
 .edge-top, .edge-bottom {
   position: fixed; left: 0; right: 0; z-index: 3; pointer-events: none; background: #ffffff;
 }
-.edge-top { top: 0; height: max(env(safe-area-inset-top, 0px), 4px); }
-.edge-bottom { bottom: 0; height: max(env(safe-area-inset-bottom, 0px), 4px); }
+.edge-top { top: 0; height: 3px; }
+.edge-bottom { bottom: 0; height: 3px; }
 
 /* ---- Avatar do usuário: uma única inicial, redondo e centralizado ---- */
 .user-chip {
@@ -1474,6 +1474,29 @@ body.user-masc, html.user-masc { background-color: #ffffff; }
 }
 .book-view-progress-edit .form-input { background: var(--cream-dark); border: 0; }
 .book-view-grid { gap: 8px; }
+
+/* Botão + : círculo perfeito, ícone centralizado */
+.fab, body.user-masc .fab {
+  width: 56px; height: 56px; min-width: 56px; padding: 0; border-radius: 50%;
+  aspect-ratio: 1 / 1; font-size: 0; line-height: 0; transform: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.fab:active { transform: scale(.92); }
+.fab svg { display: block; flex: none; }
+
+/* ---- Sessão: fundo com a capa do livro desfocada (teste) ---- */
+.timer-bg {
+  position: fixed; inset: -50px; z-index: 0; pointer-events: none;
+  background-size: cover; background-position: center;
+  filter: blur(42px) saturate(1.6) brightness(.9); transform: scale(1.15);
+  opacity: 0; transition: opacity .6s ease;
+}
+.timer-overlay.has-cover-bg .timer-bg { opacity: 1; }
+.timer-overlay.has-cover-bg::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(18,14,44,.35), rgba(18,14,44,.62));
+}
+.timer-overlay > *:not(.timer-bg) { position: relative; z-index: 1; }
 </style>
 </head>
 <body>
@@ -1730,10 +1753,9 @@ create policy "usuario ve sua wishlist" on wishlist
   
   <div class="genres" id="genres"></div>
   
-  <div class="footer-note" id="footerNote">feito com calma e chá</div>
 </div>
 
-<button class="fab" onclick="openAddBook()" aria-label="Adicionar livro">+</button>
+<button class="fab" onclick="openAddBook()" aria-label="Adicionar livro"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 
 <div class="modal-backdrop" id="modal">
   <div class="modal">
@@ -2023,6 +2045,7 @@ create policy "usuario ve sua wishlist" on wishlist
 
 <!-- TIMER OVERLAY (tela cheia) -->
 <div class="timer-overlay" id="timerOverlay">
+  <div class="timer-bg" id="timerBg"></div>
   <div class="timer-header">
     <div class="timer-label">sessão de leitura</div>
     <button class="timer-close" onclick="minimizeTimer()" aria-label="Minimizar">×</button>
@@ -4395,10 +4418,16 @@ function renderGenres() {
         const hasPages = book.pagesTotal && book.pagesTotal > 0;
         const curPg = book.pagesCurrent || 0;
         const pctNum = hasPages ? Math.round(Math.min(100, (curPg / book.pagesTotal) * 100)) : 0;
+        const pagesLeft = hasPages ? Math.max(0, book.pagesTotal - curPg) : null;
+        const localSecs = (state.sessions || [])
+          .filter(x => x.bookId === book.id && x.durationSeconds > 0)
+          .reduce((acc, x) => acc + x.durationSeconds, 0);
+        const totalSecs = getReadingTimeCached(book.id, localSecs);
+        const shortTime = shortReadingTime;
         const statsHTML = `
           <div class="reading-stats">
-            <div class="reading-stat"><b>${hasPages ? curPg : "—"}</b><span>${hasPages ? "de " + book.pagesTotal + " pág." : "páginas"}</span></div>
-            <div class="reading-stat"><b>${hasPages ? pctNum + "%" : "—"}</b><span>lido</span></div>
+            <div class="reading-stat"><b>${pagesLeft === null ? "—" : pagesLeft}</b><span>págs. restantes</span></div>
+            <div class="reading-stat"><b id="readTime-${book.id}">${shortTime(totalSecs)}</b><span>tempo lido</span></div>
             <div class="reading-stat"><b>${book.startDate ? book.startDate.split("-").reverse().slice(0,2).join("/") : "—"}</b><span>início</span></div>
           </div>`;
         const isCompact = getReadingLayout() === "compact";
@@ -4421,6 +4450,7 @@ function renderGenres() {
           </div>
         `;
         container.appendChild(card);
+        loadReadingTime(book.id);
         
         // Mostra a capa salva na hora. A busca online fica em segundo plano.
         const savedCover = getBookCover(book);
@@ -5152,6 +5182,19 @@ function startSession(bookId) {
   openTimer();
 }
 
+function setTimerBackground(url) {
+  const ov = document.getElementById("timerOverlay");
+  const bg = document.getElementById("timerBg");
+  if (!ov || !bg) return;
+  if (url) {
+    bg.style.backgroundImage = `url("${String(url).replace(/"/g, '%22')}")`;
+    ov.classList.add("has-cover-bg");
+  } else {
+    bg.style.backgroundImage = "";
+    ov.classList.remove("has-cover-bg");
+  }
+}
+
 function openTimer() {
   if (!timerState) return;
   const book = getBookById(timerState.bookId);
@@ -5174,11 +5217,13 @@ function openTimer() {
   // Cover
   const coverEl = document.getElementById("timerCover");
   coverEl.innerHTML = coverFallbackHTML(book, book.g);
+  setTimerBackground(getBookCover(book));
   fetchCover(book.t, book.a).then(url => {
     if (!url) return;
     loadCoverWithValidation(url, (validUrl) => {
       if (document.getElementById("timerOverlay").classList.contains("open")) {
         coverEl.innerHTML = `<img src="${validUrl}" alt="">`;
+        setTimerBackground(validUrl);
       }
     });
   });
@@ -6073,6 +6118,36 @@ function rereadBookFromEdit() {
 
 // Cache das últimas sessões carregadas para o livro atual no modal de edição
 // (chave: bookId, valor: array de sessões raw do supabase ordenadas desc por started_at)
+// ---- Tempo total lido por livro (soma das sessões salvas) ----
+function shortReadingTime(secs) {
+  if (!secs) return "—";
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
+  if (h > 0) return `${h}h${String(m).padStart(2, "0")}`;
+  return m > 0 ? `${m}min` : "<1min";
+}
+function getReadingTimeCached(bookId, fallbackSecs) {
+  try {
+    const c = JSON.parse(localStorage.getItem("minha_estante_readtime") || "{}");
+    if (c[bookId] != null) return Math.max(c[bookId], fallbackSecs || 0);
+  } catch(e) {}
+  return fallbackSecs || 0;
+}
+async function loadReadingTime(bookId) {
+  if (!config.setupDone || config.skipSync) return;
+  try {
+    const rows = await supabaseFetch(`reading_sessions?book_id=eq.${bookId}&select=duration_seconds&limit=1000`);
+    if (!Array.isArray(rows)) return;
+    const total = rows.reduce((sum, r) => sum + (r.duration_seconds || 0), 0);
+    try {
+      const c = JSON.parse(localStorage.getItem("minha_estante_readtime") || "{}");
+      c[bookId] = total;
+      localStorage.setItem("minha_estante_readtime", JSON.stringify(c));
+    } catch(e) {}
+    const el = document.getElementById(`readTime-${bookId}`);
+    if (el) el.textContent = shortReadingTime(total);
+  } catch(e) { /* mantém o valor em cache */ }
+}
+
 let sessionsCache = {};
 
 async function renderSessionsList(bookId, containerId = "sessionsListContainer", readOnly = false) {
