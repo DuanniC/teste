@@ -33,7 +33,7 @@ input[type=month],input[type=date]{-webkit-appearance:none;appearance:none;max-w
 .hidden{display:none!important}
 .hide-mobile{display:none!important}.show-mobile-only{display:block!important}
 /* ===== SHELL ===== */
-.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 20px 10px;max-width:980px;margin:0 auto}
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) max(20px,calc((100vw - 980px)/2 + 20px)) 10px;background:var(--bg);border-bottom:1px solid var(--border-soft)}
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
 .brand .logo-icon{width:38px;height:38px;border-radius:13px;background:var(--gradient1);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
 .brand b{font-size:16px;font-weight:600;display:block;line-height:1.1}.brand small{font-size:10.5px;color:var(--text-secondary)}
@@ -215,12 +215,18 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
 .catbar{display:flex;height:14px;border-radius:9px;overflow:hidden;gap:3px;margin-bottom:14px}.catbar i{display:block;height:100%;border-radius:4px}
 .catleg{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:12.5px}.catleg div{display:flex;align-items:center;gap:8px;color:var(--text-secondary)}.catleg i{width:10px;height:10px;border-radius:50%;flex-shrink:0}.catleg b{margin-left:auto;color:var(--text);font-weight:600}
 @media(min-width:900px){.home-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;align-items:start}.home-cols>div>.sec-title:first-child{margin-top:0}}
-@media(max-width:768px){.main-content{padding:4px 16px calc(120px + env(safe-area-inset-bottom))}.topbar{padding-left:16px;padding-right:16px}.grid-2{grid-template-columns:1fr}.page-title{font-size:25px}.form-row-3{grid-template-columns:1fr}.summary-bubbles{grid-template-columns:1fr 1fr}.cards-row{margin:0 -16px;padding-left:16px}
+@media(max-width:768px){.main-content{padding:4px 16px calc(120px + env(safe-area-inset-bottom))}.grid-2{grid-template-columns:1fr}.page-title{font-size:25px}.form-row-3{grid-template-columns:1fr}.summary-bubbles{grid-template-columns:1fr 1fr}.cards-row{margin:0 -16px;padding-left:16px}
 .modal-overlay{padding:0;align-items:flex-end}.modal{max-width:100%;border-radius:30px 30px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:94vh;animation:sheetUp .3s ease}@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
 .form-row-2{grid-template-columns:1fr}.modal .form-row-2{gap:0}.hero-total{font-size:34px}}
 @media(max-width:380px){.nav-item{padding:0 11px}.nav-item.active{padding:0 14px}.summary-bubbles{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .summary-bubbles .bubble:last-child:nth-child(even){grid-column:1/-1}
+.main-content{padding-top:14px}
+.cfg-note{font-size:12.5px;color:var(--text-secondary);margin:-6px 0 14px}
+.cfg-add{display:flex;gap:10px;margin-top:14px;align-items:center}.cfg-add .btn{flex-shrink:0}.cfg-add-cat input:first-child{width:64px;flex-shrink:0}
+.cfg-hr{border:none;border-top:1px solid var(--border-soft);margin:18px 0}
+#page-config .sub-tab-bar{width:100%}
+.catleg{grid-template-columns:1fr!important;gap:10px!important}.catleg div{white-space:nowrap}.catleg b{white-space:nowrap}
 
 .hm-label{padding:0 10px;font-weight:600;font-size:13px;min-width:92px;text-align:center;color:#fff}
 </style>
@@ -520,92 +526,56 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
 
   <!-- ===== CONFIG ===== -->
   <div class="page" id="page-config">
-    <div class="page-header"><h1 class="page-title">Configurações</h1></div>
+    <div class="page-header"><h1 class="page-title">Ajustes</h1></div>
     <div class="sub-tab-bar">
-      <div class="sub-tab active" data-subtab="config-geral" onclick="switchSubTab('config','config-geral')">Geral</div>
+      <div class="sub-tab active" data-subtab="config-pessoas" onclick="switchSubTab('config','config-pessoas')">👥 Perfis</div>
+      <div class="sub-tab" data-subtab="config-cartoes" onclick="switchSubTab('config','config-cartoes')">💳 Cartões</div>
+      <div class="sub-tab" data-subtab="config-categorias" onclick="switchSubTab('config','config-categorias')">🏷️ Categorias</div>
+      <div class="sub-tab" data-subtab="config-financas" onclick="switchSubTab('config','config-financas')">💰 Valores</div>
+      <div class="sub-tab" data-subtab="config-seguranca" onclick="switchSubTab('config','config-seguranca')">🔒 Senhas</div>
       <div class="sub-tab" data-subtab="config-conferencia" onclick="switchSubTab('config','config-conferencia')">🔍 Conferência</div>
     </div>
-    <div class="sub-page active" id="config-geral">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">Pessoas</div>
+    <div class="sub-page active" id="config-pessoas">
+      <div class="card"><div class="card-title">Perfis</div><p class="cfg-note">Toque na bolinha para escolher a cor de cada perfil.</p>
         <div id="configPessoas"></div>
-        <div class="form-row form-row-2" style="margin-top:10px;">
-          <div class="form-group"><input type="text" id="newPessoaName" placeholder="Nome"></div>
-          <div><button class="btn btn-primary" onclick="addPessoa()">Adicionar</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Cartões</div>
+        <div class="cfg-add"><input type="text" id="newPessoaName" placeholder="Nome do novo perfil"><button class="btn btn-primary" onclick="addPessoa()">Adicionar</button></div></div>
+      <div class="card"><div class="card-title">Divisão do apartamento</div><p class="cfg-note">Quanto cada pessoa paga do apartamento, em %.</p>
+        <div id="configDivisao"></div><button class="btn btn-primary" style="margin-top:8px" onclick="saveDivisaoConfig()">Salvar divisão</button></div>
+    </div>
+    <div class="sub-page" id="config-cartoes">
+      <div class="card"><div class="card-title">Cartões compartilhados</div><p class="cfg-note">Cartões usados nas despesas do Compartilhado.</p>
         <div id="configCartoes"></div>
-        <div class="form-row form-row-2" style="margin-top:10px;">
-          <div class="form-group"><input type="text" id="newCartaoName" placeholder="Nome"></div>
-          <div><button class="btn btn-secondary" onclick="addCartao()">Adicionar</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Bancos</div>
+        <div class="cfg-add"><input type="text" id="newCartaoName" placeholder="Nome do cartão"><button class="btn btn-primary" onclick="addCartao()">Adicionar</button></div></div>
+      <div class="card"><div class="card-title">Bancos</div><p class="cfg-note">Bancos disponíveis nas despesas pessoais.</p>
         <div id="configBancos"></div>
-        <div class="form-row form-row-2" style="margin-top:10px;">
-          <div class="form-group"><input type="text" id="newBancoName" placeholder="Nome do banco"></div>
-          <div><button class="btn btn-secondary" onclick="addBanco()">Adicionar</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Categorias</div>
+        <div class="cfg-add"><input type="text" id="newBancoName" placeholder="Nome do banco"><button class="btn btn-primary" onclick="addBanco()">Adicionar</button></div></div>
+    </div>
+    <div class="sub-page" id="config-categorias">
+      <div class="card"><div class="card-title">Categorias</div><p class="cfg-note">Emoji e nome de cada categoria de gasto.</p>
         <div id="configCategorias"></div>
-        <div class="form-row" style="margin-top:10px;display:grid;grid-template-columns:60px 1fr auto;gap:6px;">
-          <div class="form-group" style="margin-bottom:0;"><input type="text" id="newCategoriaIcone" placeholder="🛒" maxlength="2" style="text-align:center;"></div>
-          <div class="form-group" style="margin-bottom:0;"><input type="text" id="newCategoriaNome" placeholder="Nome da categoria"></div>
-          <div><button class="btn btn-secondary" onclick="addCategoria()">Adicionar</button></div>
-        </div>
-      </div>
+        <div class="cfg-add cfg-add-cat"><input type="text" id="newCategoriaIcone" placeholder="🛒" maxlength="2" style="text-align:center"><input type="text" id="newCategoriaNome" placeholder="Nome da categoria"><button class="btn btn-primary" onclick="addCategoria()">Adicionar</button></div></div>
     </div>
-    <div class="card" style="margin-top:14px;">
-      <div class="card-title">Receita Mensal</div>
-      <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-        <p style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Padrão (todos os meses)</p>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Usado quando o mês não tem um valor específico definido.</p>
-        <div style="display:flex;align-items:flex-end;gap:8px;">
-          <div class="form-group" style="margin-bottom:0;"><label>Valor (R$)</label><input type="number" id="receitaPadrao" placeholder="1000" style="width:140px;"></div>
-          <button class="btn btn-outline" onclick="saveReceitaPadrao()">Salvar padrão</button>
-        </div>
-      </div>
-      <div>
-        <p style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Específico para <strong id="receitaMesLabel" style="color:var(--accent);text-transform:none;"></strong></p>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Sobrescreve o padrão apenas neste mês.</p>
-        <div style="display:flex;align-items:flex-end;gap:8px;">
-          <div class="form-group" style="margin-bottom:0;"><label>Valor (R$)</label><input type="number" id="receitaMensal" placeholder="Deixe vazio para usar o padrão" style="width:200px;"></div>
-          <button class="btn btn-primary" onclick="saveReceitaMensal()">Salvar mês</button>
-        </div>
-      </div>
+    <div class="sub-page" id="config-financas">
+      <div class="card"><div class="card-title">Receita mensal</div>
+        <p class="cfg-note">Padrão, usado em todos os meses sem valor próprio.</p>
+        <div class="form-group"><label>Valor padrão (R$)</label><input type="number" id="receitaPadrao" placeholder="1000"></div>
+        <button class="btn btn-outline" onclick="saveReceitaPadrao()">Salvar padrão</button>
+        <hr class="cfg-hr">
+        <p class="cfg-note">Específico para <strong id="receitaMesLabel"></strong> — vale só neste mês.</p>
+        <div class="form-group"><label>Valor do mês (R$)</label><input type="number" id="receitaMensal" placeholder="Vazio = usa o padrão"></div>
+        <button class="btn btn-primary" onclick="saveReceitaMensal()">Salvar mês</button></div>
+      <div class="card"><div class="card-title">Dia de corte do cartão</div><p class="cfg-note">Depois deste dia, as compras entram na fatura do mês seguinte.</p>
+        <div class="form-group"><label>Dia</label><input type="number" id="diaCorte" min="1" max="31" value="8"></div>
+        <button class="btn btn-primary" onclick="saveDiaCorte()">Salvar</button></div>
     </div>
-    <div class="card" style="margin-top:14px;">
-      <div class="card-title">Dia de Corte</div>
-      <div style="display:flex;align-items:flex-end;gap:8px;">
-        <div class="form-group" style="margin-bottom:0;"><label>Dia</label><input type="number" id="diaCorte" min="1" max="31" value="8" style="width:80px;"></div>
-        <button class="btn btn-primary" onclick="saveDiaCorte()">Salvar</button>
-      </div>
+    <div class="sub-page" id="config-seguranca">
+      <div class="card"><div class="card-title">Senha pessoal</div><p class="cfg-note">Libera Pessoal e Apartamento.</p>
+        <div class="form-group"><label>Nova senha (4 dígitos)</label><input type="password" id="newSenha" maxlength="4" inputmode="numeric"></div>
+        <button class="btn btn-primary" onclick="updateSenha('senha')">Salvar</button></div>
+      <div class="card"><div class="card-title">Senha dos ajustes</div><p class="cfg-note">Libera esta área de Ajustes.</p>
+        <div class="form-group"><label>Nova senha (4 dígitos)</label><input type="password" id="newSenhaConfig" maxlength="4" inputmode="numeric"></div>
+        <button class="btn btn-primary" onclick="updateSenha('senha_config')">Salvar</button></div>
     </div>
-    <div class="grid-2" style="margin-top:14px;">
-      <div class="card">
-        <div class="card-title">Senha Pessoal</div>
-        <div class="form-group"><label>Nova (4 dígitos)</label><input type="password" id="newSenha" maxlength="4" style="width:100px;"></div>
-        <button class="btn btn-outline" onclick="updateSenha('senha')">Salvar</button>
-      </div>
-      <div class="card">
-        <div class="card-title">Senha Config</div>
-        <div class="form-group"><label>Nova (4 dígitos)</label><input type="password" id="newSenhaConfig" maxlength="4" style="width:100px;"></div>
-        <button class="btn btn-outline" onclick="updateSenha('senha_config')">Salvar</button>
-      </div>
-    </div>
-    <div class="card" style="margin-top:14px;">
-      <div class="card-title">Divisão Apartamento</div>
-      <div id="configDivisao"></div>
-      <button class="btn btn-primary" style="margin-top:8px;" onclick="saveDivisaoConfig()">Salvar</button>
-    </div>
-    </div>
-
     <!-- ===== CONFERÊNCIA DE INFORMAÇÕES ===== -->
     <div class="sub-page" id="config-conferencia">
       <div class="card" style="margin-bottom:14px;">
@@ -623,7 +593,6 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- ===== MODALS ===== -->
@@ -2405,7 +2374,7 @@ const IC={
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>',
  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M6.5 15h3"/></svg>',
  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>',
- gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+ gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
  sync:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 00-14.5-4M4 4v4h4M4 13a8 8 0 0014.5 4M20 20v-4h-4"/></svg>',
  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
@@ -2566,4 +2535,5 @@ const _ope=openPersonalExpenseModal;openPersonalExpenseModal=function(p,id){_ope
 const _oac=openAddCardModal;openAddCardModal=function(p,id){_oac(p,id);buildSegs();};
 
 document.addEventListener('DOMContentLoaded',()=>{injectIcons();buildSegs();renderHome();});
+const _sst=switchSubTab;switchSubTab=function(par,id){_sst(par,id);const t=document.querySelector(`[data-subtab="${id}"]`);if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});};
 </script>
