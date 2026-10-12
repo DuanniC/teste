@@ -227,6 +227,12 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
 .cfg-hr{border:none;border-top:1px solid var(--border-soft);margin:18px 0}
 #page-config .sub-tab-bar{width:100%}
 .catleg{grid-template-columns:1fr!important;gap:10px!important}.catleg div{white-space:nowrap}.catleg b{white-space:nowrap}
+.quick{grid-template-columns:repeat(3,1fr)}
+.cards-row{padding:24px 20px 46px;margin:-14px -20px -18px}
+.credit-card{box-shadow:0 10px 24px rgba(0,0,0,.22)}
+.credit-card.active{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 60%,transparent),0 14px 28px rgba(0,0,0,.28)}
+@media(max-width:768px){.cards-row{margin:-14px -16px -18px;padding-left:16px;padding-right:16px}}
+.pdot,.ei-detail span{white-space:nowrap}
 
 .hm-label{padding:0 10px;font-weight:600;font-size:13px;min-width:92px;text-align:center;color:#fff}
 </style>
@@ -2469,7 +2475,7 @@ function renderHome(){
    <small>Fatura compartilhada</small><div class="hero-total">${formatMoney(total)}</div>
    <div class="hero-meta"><span>${exps.length} despesa${exps.length===1?'':'s'} no mês</span></div>
    <div class="hero-notch"><button class="btn" onclick="openExpenseModal()">${IC.plus.replace('<svg','<svg width="16" height="16"')} Nova despesa</button></div></div></div>`;
-  document.getElementById('homeQuick').innerHTML=[['openExpenseModal()','plus','Nova despesa'],["pendingConfTab='config-conferencia';requestConfigAccess()",'check','Conferir'],['showProfileSelect()','user','Pessoal'],['syncData()','sync','Sincronizar']].map(a=>`<button onclick="${a[0]}"><i>${IC[a[1]]}</i>${a[2]}</button>`).join('');
+  document.getElementById('homeQuick').innerHTML=[["pendingConfTab='config-conferencia';requestConfigAccess()",'check','Conferir'],['showProfileSelect()','user','Pessoal'],['syncData()','sync','Sincronizar']].map(a=>`<button onclick="${a[0]}"><i>${IC[a[1]]}</i>${a[2]}</button>`).join('');
   document.getElementById('homeCards').innerHTML=DATA.cartoesBanco.map(n=>{const t=getMonthExpenses(sharedMonth,n).reduce((s,e)=>s+getMonthValue(e),0);return`<div class="mini-card ${getCardColor(n)}" onclick="selectCard('${n}');navigateTo('page-cartao')"><small>${n}</small><b>${formatMoney(t)}</b></div>`;}).join('');
   const pv=DATA.pessoas.map(p=>[p,getPersonCartaoTotal(p,sharedMonth)]);const mx=Math.max(1,...pv.map(x=>x[1]));
   document.getElementById('homePeople').innerHTML=pv.map(([p,v])=>{const c=getPersonColor(p);return`<div class="person-row" style="--pc:${c};--pc-ink:${inkFor(c)}" onclick="setFilter('${p}');navigateTo('page-cartao')"><div class="av">${p.charAt(0).toUpperCase()}</div><div class="pr-main"><div class="pr-top"><span>${capitalize(p)}</span><span>${formatMoney(v)}</span></div><div class="pr-bar"><i style="width:${v/mx*100}%"></i></div></div></div>`;}).join('')||'<div class="empty-state"><p>Nenhuma pessoa cadastrada</p></div>';
