@@ -233,6 +233,18 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
 .credit-card.active{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 60%,transparent),0 14px 28px rgba(0,0,0,.28)}
 @media(max-width:768px){.cards-row{margin:-14px -16px -18px;padding-left:16px;padding-right:16px}}
 .pdot,.ei-detail span{white-space:nowrap}
+.hero-notch{padding:10px 12px 12px 10px}
+.hero-notch .btn{padding:13px 22px}
+.summary-bubbles{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+.summary-bubbles .bubble:last-child:nth-child(even){grid-column:auto}
+.bubble:not(:first-child){padding:13px 14px}.bubble:not(:first-child) .bubble-value{font-size:16px}.bubble:not(:first-child) .bubble-label{font-size:11px}.bubble:not(:first-child) .bubble-sub{font-size:10px;line-height:1.4}
+.summary-bubbles-single{grid-template-columns:1fr!important}
+.resumo-actions{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px}.resumo-actions .btn{flex:1;min-width:140px;padding:14px}
+@media(max-width:768px){.summary-bubbles{grid-template-columns:repeat(3,1fr);gap:10px}#alanSummary{grid-template-columns:repeat(2,1fr)}}
+:root[data-theme=dark] .hero-notch .btn{background:#fff;color:#14142b}
+.hero-notch .btn{box-shadow:0 6px 16px rgba(0,0,0,.25)}
+tbody td:not(:first-child),tbody td strong{white-space:nowrap}
+tbody td:first-child{min-width:120px}
 
 .hm-label{padding:0 10px;font-weight:600;font-size:13px;min-width:92px;text-align:center;color:#fff}
 </style>
@@ -335,13 +347,17 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
       <div class="month-selector"><button onclick="changeMonth(-1)">◀</button><span class="month-label" id="monthLabelDuanni"></span><button onclick="changeMonth(1)">▶</button></div>
     </div>
     <div class="sub-tab-bar">
-      <div class="sub-tab active" data-subtab="duanni-inicio" onclick="switchSubTab('duanni','duanni-inicio')">Início</div>
+      <div class="sub-tab active" data-subtab="duanni-inicio" onclick="switchSubTab('duanni','duanni-inicio')">Resumo</div>
+      <div class="sub-tab" data-subtab="duanni-despesas" onclick="switchSubTab('duanni','duanni-despesas')">Despesas</div>
       <div class="sub-tab" data-subtab="duanni-meta" onclick="switchSubTab('duanni','duanni-meta')">Meta</div>
       <div class="sub-tab" data-subtab="duanni-simular" onclick="switchSubTab('duanni','duanni-simular')">Simular</div>
       <div class="sub-tab" data-subtab="duanni-controle" onclick="switchSubTab('duanni','duanni-controle')">Controle</div>
     </div>
     <div class="sub-page active" id="duanni-inicio">
       <div class="summary-bubbles" id="duanniSummary"></div>
+      <div class="resumo-actions"><button class="btn btn-primary" onclick="openPersonalExpenseModal('duanni')">＋ Despesa pessoal</button><button class="btn btn-outline" onclick="switchSubTab('duanni','duanni-despesas')">Ver despesas</button></div>
+    </div>
+    <div class="sub-page" id="duanni-despesas">
       <div class="card" style="margin-bottom:14px;">
         <div class="card-title">Despesas Pessoais<button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openPersonalExpenseModal('duanni')">＋ Adicionar</button></div>
         <div id="duanniPersonalList"></div>
@@ -441,6 +457,8 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
   <div class="page" id="page-alan">
     <div class="page-header"><h1 class="page-title">Alan</h1><div class="month-selector"><button onclick="changeMonth(-1)">◀</button><span class="month-label" id="monthLabelAlan"></span><button onclick="changeMonth(1)">▶</button></div></div>
     <div class="summary-bubbles" id="alanSummary"></div>
+    <div class="sub-tab-bar"><div class="sub-tab active" data-subtab="alan-despesas" onclick="switchSubTab('alan','alan-despesas')">Despesas</div><div class="sub-tab" data-subtab="alan-amor" onclick="switchSubTab('alan','alan-amor')">💕 Cartão do amor</div></div>
+    <div class="sub-page" id="alan-amor">
     <div class="expandable" id="amorExpandable">
       <div class="expandable-header" onclick="toggleExpandable(this)">
         💕 <span id="amorCartaoNomeLabel" style="margin-left:4px;">Cartão do Amor</span>
@@ -459,7 +477,10 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
       </div>
     </div>
     <div id="alanAmorCustomList" style="margin-bottom:14px;"></div>
+    </div>
+    <div class="sub-page active" id="alan-despesas">
     <div class="card"><div class="card-title">Despesas<button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openAddCardModal('alan')">＋ Adicionar</button></div><div class="table-wrap"><table><thead><tr><th>Descrição</th><th>Parc</th><th>Valor</th><th></th></tr></thead><tbody id="alanCartaoBody"></tbody></table></div></div>
+    </div>
   </div>
 
   <!-- ===== RONALDO ===== -->
