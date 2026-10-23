@@ -351,6 +351,8 @@ input,select,textarea{font-size:max(16px,1rem) !important;}
 .ing-picker:empty{display:none !important;}
 .ing-chip{flex:0 0 auto;min-height:42px;padding:8px 16px;font-size:.9rem;white-space:nowrap;}
 
+.tabs-wrap{position:sticky;top:calc(66px + var(--safe-t));z-index:3;background:#fff;padding:4px 0 12px;}
+#detailContent .tabs{position:static;top:auto;margin:0;box-shadow:none;}
 #ingToggle,#stepsToggle{background:transparent;color:var(--ink-soft);}
 #ingToggle.on,#stepsToggle.on{background:var(--rasp);color:#fff;}
 /* ===== RECEITA ABERTA (tablet/computador): coluna fixa, só a lista rola ===== */
@@ -360,8 +362,9 @@ input,select,textarea{font-size:max(16px,1rem) !important;}
   #detailContent .d-top{position:static;flex:0 0 auto;}
   #detailContent .d-grid{flex:1 1 auto;min-height:0;overflow:hidden;align-items:stretch;padding-bottom:calc(20px + var(--safe-b));}
   #detailContent .d-side{position:static;top:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
-  #detailContent .d-main{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0;}
-  #detailContent .tabs{position:sticky;top:0;z-index:3;margin:12px 0 18px;box-shadow:0 0 0 12px #fff;}
+  #detailContent .d-main{min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0 22px;}
+  #detailContent .tabs-wrap{position:static;flex:0 0 auto;padding:16px 0 14px;}
+  #detailContent .d-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:24px;}
 }
 </style></head>
 <body>
@@ -830,9 +833,11 @@ function openDetail(r){
         </div>
       </div>
       <div class="d-main">
-        <div class="tabs"><button type="button" class="tabbtn on" id="ingToggle">Ingredientes</button><button type="button" class="tabbtn" id="stepsToggle">Modo de preparo</button></div>
-        <div class="collapsible open" id="ingBody"><ul class="check-list" id="ingList"></ul></div>
-        <div class="collapsible" id="stepsBody"><div id="stepsContainer"></div></div>
+        <div class="tabs-wrap"><div class="tabs"><button type="button" class="tabbtn on" id="ingToggle">Ingredientes</button><button type="button" class="tabbtn" id="stepsToggle">Modo de preparo</button></div></div>
+        <div class="d-scroll">
+          <div class="collapsible open" id="ingBody"><ul class="check-list" id="ingList"></ul></div>
+          <div class="collapsible" id="stepsBody"><div id="stepsContainer"></div></div>
+        </div>
       </div>
     </div>`;
   let mult=1;
