@@ -313,6 +313,43 @@ footer{margin:40px 0 0;background:none;color:var(--ink-soft);font-size:1rem;padd
 /* tela estática: sem zoom automático ao tocar nos campos */
 html{touch-action:pan-y;-webkit-text-size-adjust:100%;}
 input,select,textarea{font-size:max(16px,1rem) !important;}
+
+/* ===== LISTA DE COMPRAS: gaveta com rolagem própria ===== */
+#shopOverlay{overflow:hidden;}
+#shopContent{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;height:100vh;height:100dvh;max-height:100dvh;min-height:0;padding-bottom:0;}
+.shop-actions{position:sticky;bottom:0;z-index:4;margin:14px -24px 0;padding:16px 24px calc(14px + var(--safe-b));background:linear-gradient(rgba(255,255,255,0),#fff 28%);}
+@media (max-width:760px){
+  #shopOverlay{align-items:flex-end;justify-content:center;}
+  #shopContent{height:auto;max-height:90vh;max-height:90dvh;border-radius:30px 30px 0 0;}
+  .shop-actions{margin:14px -18px 0;padding:16px 18px calc(14px + var(--safe-b));}
+}
+/* ajustes finos */
+.scale-custom{width:98px !important;}
+.row-handle{color:var(--rasp);}
+/* ===== INGREDIENTES E PASSOS: mais espaço e mais fácil ===== */
+.ing-row{display:block;background:#F2F8FD;border-radius:24px;padding:8px 16px 16px;margin-bottom:16px;}
+.ing-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ing-n{flex:1;font-weight:800;font-size:.88rem;color:var(--ink-soft);}
+.ing-fields{display:grid;grid-template-columns:1fr 1.3fr;gap:14px 12px;}
+.form-grid label.f{display:block;margin:0;}
+.f span{display:block;font-size:.8rem;font-weight:700;color:var(--ink-soft);margin:0 0 5px 4px;}
+.ing-row input,.ing-row select{min-height:52px;background:#fff !important;border:2px solid #DCE9F5 !important;}
+.ing-row input:focus,.ing-row select:focus{border-color:var(--pink) !important;}
+.f-name,.f-brand{grid-column:1/-1;}
+.ing-row:not(.has-brand) .f-brand{display:none;}
+.brand-toggle{margin-top:6px;background:none;border:none;color:var(--rasp);font-weight:700;font-size:.9rem;padding:8px 4px;cursor:pointer;}
+.ing-row.has-brand .brand-toggle{display:none;}
+.step-row:not(.step-row-section){background:#F2F8FD;padding:12px 12px 8px;margin-bottom:16px;border-radius:24px;}
+.step-row:not(.step-row-section):hover{background:#F2F8FD;}
+.step-row textarea{background:#fff !important;border:2px solid #DCE9F5 !important;min-height:70px;}
+.ing-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:10px 2px 4px;}
+.ing-bar:has(+ .ing-picker:empty){display:none;}
+.ing-bar-label{font-size:.82rem;font-weight:700;color:var(--ink-soft);}
+.part-toggle{background:none;border:none;color:var(--ink-soft);font-weight:700;font-size:.82rem;cursor:pointer;padding:7px 10px;border-radius:999px;min-height:36px;}
+.step-row.part-mode .part-toggle{background:var(--pink-l);color:var(--rasp);}
+.ing-picker{display:flex !important;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:2px 2px 8px;-webkit-overflow-scrolling:touch;}
+.ing-picker:empty{display:none !important;}
+.ing-chip{flex:0 0 auto;min-height:42px;padding:8px 16px;font-size:.9rem;white-space:nowrap;}
 </style></head>
 <body>
 
@@ -919,12 +956,20 @@ function renderIngRows(){
     const unitOptions=UNITS.map(u=>`<option value="${u.value}" ${u.value===ing.unit?'selected':''}>${u.singular}</option>`).join('');
     row.dataset.idx = idx;
     row.innerHTML=`
-      <button type="button" class="row-handle" title="Arraste para reordenar" aria-label="Reordenar ingrediente">⠿</button>
-      <input type="text" inputmode="decimal" class="qty-input" placeholder="qtd (ex: 1 1/2)" value="${escapeHtml(String(ing.qty))}">
-      <select class="unit-select">${unitOptions}</select>
-      <input type="text" class="ing-name" placeholder="ingrediente (ex: manteiga com sal)" value="${escapeHtml(ing.name)}">
-      <input type="text" class="ing-brand" placeholder="marca (opcional)" value="${escapeHtml(ing.brand||'')}">
-      <button type="button" class="row-del" title="remover">✕</button>`;
+      <div class="ing-head">
+        <button type="button" class="row-handle" title="Arraste para reordenar" aria-label="Reordenar ingrediente">⠿</button>
+        <span class="ing-n">Ingrediente ${idx+1}</span>
+        <button type="button" class="row-del" title="remover" aria-label="Remover ingrediente">✕</button>
+      </div>
+      <div class="ing-fields">
+        <label class="f f-qty"><span>Quantidade</span><input type="text" inputmode="decimal" class="qty-input" placeholder="ex: 2 ou 1/2" value="${escapeHtml(String(ing.qty))}"></label>
+        <label class="f f-unit"><span>Unidade</span><select class="unit-select">${unitOptions}</select></label>
+        <label class="f f-name"><span>Ingrediente</span><input type="text" class="ing-name" placeholder="ex: leite condensado" value="${escapeHtml(ing.name)}"></label>
+        <label class="f f-brand"><span>Marca (opcional)</span><input type="text" class="ing-brand" placeholder="ex: Piracanjuba" value="${escapeHtml(ing.brand||'')}"></label>
+      </div>
+      <button type="button" class="brand-toggle">+ marca</button>`;
+    row.classList.toggle('has-brand', !!ing.brand);
+    row.querySelector('.brand-toggle').addEventListener('click',()=>{ row.classList.add('has-brand'); row.querySelector('.ing-brand').focus(); });
     attachRowDrag(row, '.row-handle', {
       list: () => formIngredients,
       container: wrap,
@@ -939,6 +984,7 @@ function renderIngRows(){
     const brandInp = row.querySelectorAll('input[type=text]')[2];
     nameInp.addEventListener('input', e=>{ ing.name=e.target.value; refreshStepPreviews(); refreshIngPickers(); });
     brandInp.addEventListener('input', e=>ing.brand=e.target.value);
+    nameInp.addEventListener('keydown', e=>{ if(e.key==='Enter' && nameInp.value.trim()){ e.preventDefault(); addIngredientRow(); renderIngRows(); focusLastIng(); } });
     row.querySelector('.row-del').addEventListener('click',()=>{
       formIngredients.splice(idx,1);
       if(formIngredients.length===0) addIngredientRow();
@@ -948,7 +994,7 @@ function renderIngRows(){
   });
   refreshIngPickers();
 }
-document.getElementById('addIngRow').addEventListener('click',()=>{ addIngredientRow(); renderIngRows(); });
+document.getElementById('addIngRow').addEventListener('click',()=>{ addIngredientRow(); renderIngRows(); focusLastIng(); });
 
 function ensureAtLeastOneStep(){ if(formSteps.length===0) formSteps.push({type:'step', text:''}); }
 function renderStepRows(){
@@ -978,7 +1024,7 @@ function renderStepRows(){
           <textarea placeholder="Ex: Triture o biscoito...">${escapeHtml(item.text)}</textarea>
           <button type="button" class="row-del" title="remover">✕</button>
         </div>
-        ${showIngUI ? '<button type="button" class="ing-toggle" data-role="ing-toggle">+ inserir ingrediente</button><div class="ing-picker"></div>' : ''}
+        <div class="ing-bar"><span class="ing-bar-label">Toque para inserir ingrediente</span><button type="button" class="part-toggle" data-role="part-toggle">☐ quantidade específica</button></div><div class="ing-picker"></div>
         <div class="step-preview"></div>
         <div class="substeps-editor" data-role="substeps-editor"></div>
         <button type="button" class="row-add-substep" data-role="add-substep">+ subitem</button>`;
@@ -988,6 +1034,8 @@ function renderStepRows(){
       row.querySelector('.row-del').addEventListener('click',()=>{
         formSteps.splice(idx,1); ensureAtLeastOneStep(); renderStepRows();
       });
+      const pt = row.querySelector('[data-role=part-toggle]');
+      if(pt) pt.addEventListener('click',()=>{ const on=row.classList.toggle('part-mode'); pt.textContent=(on?'☑':'☐')+' quantidade específica'; });
       const igt = row.querySelector('[data-role=ing-toggle]');
       if(igt) igt.addEventListener('click',()=>{
         row.classList.toggle('show-ings');
@@ -1060,7 +1108,7 @@ function refreshIngPickers(){
         const ing = formIngredients.find(i=>(i.name||'').trim()===chip.dataset.name);
         const totalHint = ing ? `${formatQty(parseQty(ing.qty))} ${unitLabel(ing.unit, parseQty(ing.qty))}` : '';
         let token = '{{'+chip.dataset.name+'}}';
-        const custom = window.prompt(`Quantidade de "${chip.dataset.name}" usada NESTA etapa.\nDeixe em branco para usar o total da receita (${totalHint}).`, '');
+        const custom = !row.classList.contains('part-mode') ? null : window.prompt(`Quantidade de "${chip.dataset.name}" usada NESTA etapa.\nDeixe em branco para usar o total da receita (${totalHint}).`, '');
         if(custom !== null && custom.trim() !== ''){
           const qtyVal = custom.trim();
           const unitVal = window.prompt('Unidade nesta etapa (ex: colher de sopa, unidade, g...). Deixe em branco para manter a mesma unidade do ingrediente.', '') || '';
@@ -1381,6 +1429,7 @@ document.getElementById('openShop').addEventListener('click',openShopPicker);
 })();
 
 /* ---- Passo a passo do formulário, busca e filtro ---- */
+function focusLastIng(){ const rs=document.querySelectorAll('#ingRows .ing-row'); const l=rs[rs.length-1]; if(l) l.querySelector('.qty-input').focus(); }
 let wizStep=1;
 function syncCat(){ const v=document.getElementById('fCat').value; document.querySelectorAll('.cat-tile').forEach(t=>t.classList.toggle('on',t.dataset.cat===v)); }
 function goStep(n){
