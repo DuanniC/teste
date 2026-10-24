@@ -1019,6 +1019,10 @@ button { font-family: inherit; }
 .amazon-fetch-btn:active { transform: scale(.95); }
 .amazon-fetch-btn:disabled { opacity: .5; }
 .amazon-status { margin-top: 8px; font-size: 12px; min-height: 16px; color: var(--ink-soft); }
+.amazon-first { margin: 2px 0 14px; border: 1.5px solid var(--rose-deep); }
+.amazon-first .amazon-divider-line span { color: var(--ink); font-weight: 600; }
+.manual-divider { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--ink-soft); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.manual-divider::before, .manual-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .amazon-status.ok { color: var(--sage-deep); }
 .amazon-status.err { color: var(--rose-deep); }
 
@@ -2254,7 +2258,18 @@ create policy "usuario ve sua wishlist" on wishlist
       <button class="modal-close" onclick="closeAddBook()">×</button>
     </div>
     <p class="modal-sub">Pra engordar sua estante ✦</p>
-    
+
+    <div class="amazon-divider amazon-first" id="amazonSection">
+      <div class="amazon-divider-line"><span>✦ cole o link da Amazon e eu preencho tudo</span></div>
+      <div class="amazon-input-wrap">
+        <input type="url" class="form-input" id="amazonUrl" placeholder="https://amazon.com.br/... ou https://a.co/d/..." autocomplete="off">
+        <button class="amazon-fetch-btn" onclick="fetchFromAmazon()" id="amazonFetchBtn">Buscar ✦</button>
+      </div>
+      <div class="amazon-status" id="amazonStatus"></div>
+    </div>
+
+    <div class="manual-divider"><span>ou preencha manualmente</span></div>
+
     <div class="form-group">
       <label class="form-label">Título</label>
       <input type="text" class="form-input" id="newTitle" placeholder="Digite o título manualmente" autocomplete="off">
@@ -2295,15 +2310,6 @@ create policy "usuario ve sua wishlist" on wishlist
       <select class="form-select" id="newSeriesVolume"></select>
     </div>
 
-    <div class="amazon-divider" id="amazonSection">
-      <div class="amazon-divider-line"><span>ou cole o link da Amazon</span></div>
-      <div class="amazon-input-wrap">
-        <input type="url" class="form-input" id="amazonUrl" placeholder="https://amazon.com.br/... ou https://a.co/d/..." autocomplete="off">
-        <button class="amazon-fetch-btn" onclick="fetchFromAmazon()" id="amazonFetchBtn">Buscar ✦</button>
-      </div>
-      <div class="amazon-status" id="amazonStatus"></div>
-    </div>
-    
     <button class="form-btn" onclick="addBook()">Adicionar à estante</button>
   </div>
 </div>
@@ -7827,7 +7833,7 @@ function openAddBook() {
   
   document.getElementById("addModal").classList.add("open");
   lockPageBehindModal();
-  setTimeout(() => document.getElementById("newTitle").focus(), 300);
+  setTimeout(() => { const u = document.getElementById("amazonUrl"); (u || document.getElementById("newTitle")).focus(); }, 300);
 }
 
 function closeAddBook() {
@@ -8282,6 +8288,28 @@ async function fetchFromAmazon() {
 
   btn.disabled = false;
 }
+
+// Ao colar um link da Amazon, busca sozinho (sem precisar tocar em "Buscar").
+(function setupAmazonAutoFetch() {
+  const init = () => {
+    const el = document.getElementById('amazonUrl');
+    if (!el || el._autoFetch) return;
+    el._autoFetch = true;
+    let timer = null, lastUrl = '';
+    const check = () => {
+      const v = el.value.trim();
+      const looksAmazon = /^(https?:\/\/)?(www\.)?(a\.co|amzn\.to|amzn\.eu|amzn\.com)\//i.test(v) || /amazon\.[a-z.]+\//i.test(v);
+      const btn = document.getElementById('amazonFetchBtn');
+      if (!looksAmazon || v === lastUrl || (btn && btn.disabled)) return;
+      lastUrl = v;
+      fetchFromAmazon();
+    };
+    el.addEventListener('paste', () => { clearTimeout(timer); timer = setTimeout(check, 250); });
+    el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(check, 700); });
+    el.addEventListener('focus', () => { lastUrl = ''; });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
 
 // Seta valor num input de título sem disparar o autocomplete (que ficaria em loop
 // se o título for um slug bruto da Amazon, sem match em nenhum índice de busca)
