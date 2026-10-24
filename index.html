@@ -1019,6 +1019,12 @@ button { font-family: inherit; }
 .amazon-fetch-btn:active { transform: scale(.95); }
 .amazon-fetch-btn:disabled { opacity: .5; }
 .amazon-status { margin-top: 8px; font-size: 12px; min-height: 16px; color: var(--ink-soft); }
+.amazon-hero { text-align: center; padding: 22px 16px 16px; margin: 4px 0 8px; background: var(--cream-dark); border: 1.5px solid var(--rose-deep); border-radius: 24px; }
+.amazon-hero-icon { font-size: 30px; line-height: 1; margin-bottom: 8px; }
+.amazon-hero-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.amazon-hero-sub { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px; }
+.amazon-hero .amazon-status { text-align: center; }
+.manual-link { background: none; border: 0; margin-top: 10px; padding: 6px 10px; font-size: 12.5px; color: var(--ink-soft); text-decoration: underline; cursor: pointer; font-family: inherit; }
 .amazon-first { margin: 2px 0 14px; border: 1.5px solid var(--rose-deep); }
 .amazon-first .amazon-divider-line span { color: var(--ink); font-weight: 600; }
 .manual-divider { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--ink-soft); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
@@ -2259,16 +2265,20 @@ create policy "usuario ve sua wishlist" on wishlist
     </div>
     <p class="modal-sub">Pra engordar sua estante ✦</p>
 
-    <div class="amazon-divider amazon-first" id="amazonSection">
-      <div class="amazon-divider-line"><span>✦ cole o link da Amazon e eu preencho tudo</span></div>
+    <div class="amazon-hero" id="amazonSection">
+      <div class="amazon-hero-icon">🔗</div>
+      <div class="amazon-hero-title">Cole o link da Amazon</div>
+      <div class="amazon-hero-sub">Eu preencho título, autor, páginas e gênero pra você.</div>
       <div class="amazon-input-wrap">
-        <input type="url" class="form-input" id="amazonUrl" placeholder="https://amazon.com.br/... ou https://a.co/d/..." autocomplete="off">
+        <input type="url" class="form-input" id="amazonUrl" placeholder="amazon.com.br/... ou a.co/..." autocomplete="off">
         <button class="amazon-fetch-btn" onclick="fetchFromAmazon()" id="amazonFetchBtn">Buscar ✦</button>
       </div>
       <div class="amazon-status" id="amazonStatus"></div>
+      <button type="button" class="manual-link" id="manualLink" onclick="revealAddFields(true)">Prefiro preencher manualmente</button>
     </div>
 
-    <div class="manual-divider"><span>ou preencha manualmente</span></div>
+    <div id="addFields" style="display:none;">
+    <div class="manual-divider"><span>confere os dados</span></div>
 
     <div class="form-group">
       <label class="form-label">Título</label>
@@ -2311,6 +2321,7 @@ create policy "usuario ve sua wishlist" on wishlist
     </div>
 
     <button class="form-btn" onclick="addBook()">Adicionar à estante</button>
+    </div>
   </div>
 </div>
 
@@ -7829,6 +7840,7 @@ function openAddBook() {
   const autoEl = document.getElementById("titleAutocomplete");
   if (autoEl) { autoEl.innerHTML = ""; autoEl.classList.remove("open"); }
 
+  revealAddFields(false);
   setupAutocomplete();
   
   document.getElementById("addModal").classList.add("open");
@@ -8288,6 +8300,27 @@ async function fetchFromAmazon() {
 
   btn.disabled = false;
 }
+
+// Mostra/esconde os campos do livro (ficam escondidos até a busca da Amazon ou "manual")
+function revealAddFields(show) {
+  const f = document.getElementById('addFields');
+  const m = document.getElementById('manualLink');
+  if (f) f.style.display = show ? '' : 'none';
+  if (m) m.style.display = show ? 'none' : '';
+  if (show) {
+    const t = document.getElementById('newTitle');
+    if (t && !t.value) setTimeout(() => t.focus(), 50);
+    else if (f) setTimeout(() => f.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
+(function wrapFetchFromAmazon() {
+  const orig = fetchFromAmazon;
+  fetchFromAmazon = async function () {
+    await orig.apply(this, arguments);
+    const st = (document.getElementById('amazonStatus') || {}).textContent || '';
+    if (!/^(Cole um link|Não parece)/.test(st)) revealAddFields(true);
+  };
+})();
 
 // Ao colar um link da Amazon, busca sozinho (sem precisar tocar em "Buscar").
 (function setupAmazonAutoFetch() {
