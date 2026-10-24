@@ -10604,6 +10604,44 @@ function _isbn13to10(isbn13) {
   return core + (c === 10 ? 'X' : String(c));
 }
 
+// Busca capas direto na pesquisa da Amazon.com.br (funciona para edições brasileiras sem ISBN-10 na imagem).
+function _amzTitleMatch(book, alt) {
+  const norm = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  const tk = norm(book.t).split(' ').filter(x => x.length > 2);
+  const ct = norm(String(alt || '').replace(/^Image \d+:\s*/i, ''));
+  if (!tk.length || !ct) return false;
+  return tk.filter(x => ct.includes(x)).length / tk.length >= 0.85;
+}
+
+async function amazonSearchCovers(book, max = 8) {
+  const q = `${book.t || ''} ${book.a || ''}`.trim();
+  const target = `https://www.amazon.com.br/s?k=${encodeURIComponent(q)}&i=stripbooks`;
+  let content = '';
+  for (const makeProxyUrl of AMAZON_PROXIES) {
+    try {
+      const resp = await fetchWithTimeout(makeProxyUrl(target), {}, 12000);
+      if (!resp.ok) continue;
+      const txt = await resp.text();
+      if (txt && txt.length > 500 && /media-amazon\.com\/images\/I\//.test(txt)) { content = txt; break; }
+    } catch (e) {}
+  }
+  if (!content) return [];
+  const out = [], seen = new Set();
+  const push = (alt, src) => {
+    const m = String(src).match(/\/images\/I\/([^./]+)\./);
+    if (!m || seen.has(m[1]) || !_amzTitleMatch(book, alt)) return;
+    seen.add(m[1]);
+    out.push(`https://m.media-amazon.com/images/I/${m[1]}._SL600_.jpg`);
+  };
+  for (const m of content.matchAll(/!\[([^\]]*)\]\((https?:\/\/[^)\s]*media-amazon\.com\/images\/I\/[^)\s]+)\)/g)) push(m[1], m[2]);
+  for (const m of content.matchAll(/<img\b[^>]*>/gi)) {
+    const src = (m[0].match(/\bsrc=["']([^"']+)["']/i) || [])[1];
+    const alt = (m[0].match(/\balt=["']([^"']*)["']/i) || [])[1] || '';
+    if (src && /media-amazon\.com\/images\/I\//.test(src)) push(alt, src);
+  }
+  return out.slice(0, max);
+}
+
 fetchBookMeta = async function(title, author) {
   const key = coverKey(title, author);
   if (!state.covers) state.covers = {};
@@ -10699,6 +10737,14 @@ fetchBookMeta = async function(title, author) {
   // ── 4) Amazon com os ISBNs novos ─────────────────────────────────────────
   if (canWriteCover && !state.covers[key]) await tryAmazon();
 
+  // ── 5) Pesquisa na Amazon.com.br (edições brasileiras) ───────────────────
+  if (canWriteCover && !state.covers[key]) {
+    try {
+      const urls = await amazonSearchCovers({ t: title, a: author }, 3);
+      for (const u of urls) { if (await saveValidatedCover(u)) break; }
+    } catch (e) {}
+  }
+
   if (canWriteCover && !state.covers[key]) state.covers[key] = 'NONE';
   if (!pagesWasChecked(key)) state.bookPages[key] = 'NONE';
   saveState();
@@ -10731,6 +10777,9 @@ async function _findAmazonCoverFor(book) {
     const b = await test(`https://m.media-amazon.com/images/P/${isbn}.01._SCLZZZZZZZ_.jpg`);
     if (b) return b;
   }
+  try {
+    for (const u of await amazonSearchCovers(book, 3)) { const ok = await test(u); if (ok) return ok; }
+  } catch (e) {}
   return null;
 }
 
@@ -13176,6 +13225,17 @@ saveSession = async function(markAsRead) {
         if (ok) { count++; onFound(ok.url); break; }
       }
     }
+    // Pesquisa direta na Amazon.com.br (edições brasileiras)
+    try {
+      if (typeof amazonSearchCovers === 'function') {
+        for (const u of await amazonSearchCovers(book, 8)) {
+          if (count >= 18) break;
+          if (seen.has(u)) continue; seen.add(u);
+          const ok = await probe(u);
+          if (ok) { count++; onFound(ok.url); }
+        }
+      }
+    } catch(e){}
     return count;
   }
 
