@@ -240,7 +240,7 @@ tbody td{padding:13px 10px;border-bottom:1px solid var(--border-soft);vertical-a
 .bubble:not(:first-child){padding:13px 14px}.bubble:not(:first-child) .bubble-value{font-size:16px}.bubble:not(:first-child) .bubble-label{font-size:11px}.bubble:not(:first-child) .bubble-sub{font-size:10px;line-height:1.4}
 .summary-bubbles-single{grid-template-columns:1fr!important}
 .resumo-actions{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px}.resumo-actions .btn{flex:1;min-width:140px;padding:14px}
-@media(max-width:768px){.summary-bubbles{grid-template-columns:repeat(3,1fr);gap:10px}#alanSummary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.summary-bubbles{grid-template-columns:repeat(3,1fr);gap:10px}#alanSummary{grid-template-columns:repeat(2,1fr)}#alanSummary>.bubble:first-child{grid-column:1/-1}}
 :root[data-theme=dark] .hero-notch .btn{background:#fff;color:#14142b}
 .hero-notch .btn{box-shadow:0 6px 16px rgba(0,0,0,.25)}
 tbody td:not(:first-child),tbody td strong{white-space:nowrap}
@@ -1760,7 +1760,8 @@ function renderAlan(){
   document.getElementById('alanSummary').innerHTML=`
     <div class="bubble bubble-purple"><div class="bubble-label">Total (Alan paga)</div><div class="bubble-value">${formatMoney(final_)}</div></div>
     <div class="bubble bubble-pink"><div class="bubble-label">Cartão</div><div class="bubble-value">${formatMoney(ct)}</div><div class="bubble-sub">${cd}</div></div>
-    <div class="bubble bubble-orange"><div class="bubble-label">Separado</div><div class="bubble-value">${formatMoney(at+pTotal)}</div><div class="bubble-sub">Apto: ${formatMoney(at)}<br>Pessoal: ${formatMoney(pTotal)}</div></div>
+    <div class="bubble bubble-green"><div class="bubble-label">Apto</div><div class="bubble-value">${formatMoney(at)}</div></div>
+    <div class="bubble bubble-orange"><div class="bubble-label">Separado</div><div class="bubble-value">${formatMoney(pTotal)}</div><div class="bubble-sub">Despesas pessoais</div></div>
     <div class="bubble ${saldoLivre>=0?'bubble-green':'bubble-orange'}"><div class="bubble-label">Saldo Livre</div><div class="bubble-value" style="color:${saldoLivre>=0?'var(--success)':'var(--danger)'}">${formatMoney(Math.abs(saldoLivre))}</div><div class="bubble-sub">${saldoLivre<0?'Faltando':''}</div></div>`;
 
   // Despesas pessoais do Alan
