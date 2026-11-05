@@ -580,6 +580,9 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
       <div class="card"><div class="card-title">Bancos</div><p class="cfg-note">Bancos disponíveis nas despesas pessoais.</p>
         <div id="configBancos"></div>
         <div class="cfg-add"><input type="text" id="newBancoName" placeholder="Nome do banco"><button class="btn btn-primary" onclick="addBanco()">Adicionar</button></div></div>
+      <div class="card"><div class="card-title">Bancos · Alan</div><p class="cfg-note">Bancos do Alan nas despesas pessoais dele.</p>
+        <div id="configBancosAlan"></div>
+        <div class="cfg-add"><input type="text" id="newBancoAlanName" placeholder="Nome do banco"><button class="btn btn-primary" onclick="addBancoAlan()">Adicionar</button></div></div>
     </div>
     <div class="sub-page" id="config-categorias">
       <div class="card"><div class="card-title">Categorias</div><p class="cfg-note">Emoji e nome de cada categoria de gasto.</p>
@@ -775,7 +778,7 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 function supaFetch(path,opts={}){return fetch(`${SUPA_URL}/rest/v1/${path}`,{...opts,headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`,'Content-Type':'application/json','Prefer':opts.method==='PATCH'||opts.method==='POST'?'return=representation':undefined,...opts.headers}});}
 
 // ===== STATE =====
-let DATA={coresPerfil:{},cartao:[],pessoal:[],apto:{},bancos:['Itaú','PagBank','Nubank','Bradesco'],cartoesBanco:['Itaú','PagBank'],pessoas:['duanni','alan','ronaldo','sueli'],divisao:{duanni:50,alan:50},diaCorte:8,cartaoStatus:[],devoIds:[],devoConfig:{titulo:'💕 cartão do meu amor',legenda:'despesas minhas no cartão dele · subtraído do total'},customData:[],receitaMensal:0,receitaPorMes:{},receitaAlan:0,receitaAlanPorMes:{},simulacoes:[],caixa:{},aluguel:{},aluguelDescontos:[],amorItems:[],manualCards:{},conferencia:{},categorias:[{id:'compras',nome:'Compras',icone:'🛒'},{id:'alimentacao',nome:'Alimentação',icone:'🍔'},{id:'assinaturas',nome:'Assinaturas',icone:'📝'},{id:'streamings',nome:'Streamings',icone:'📺'},{id:'saude',nome:'Saúde/Beleza',icone:'💊'},{id:'lazer',nome:'Lazer',icone:'🎮'},{id:'presentes',nome:'Presentes',icone:'🎁'},{id:'snow',nome:'Snow 🐶',icone:'🐶'},{id:'poupanca',nome:'Poupança',icone:'🏦'},{id:'outros',nome:'Outros',icone:'📦'}]};
+let DATA={coresPerfil:{},cartao:[],pessoal:[],apto:{},bancos:['Itaú','PagBank','Nubank','Bradesco'],cartoesBanco:['Itaú','PagBank'],pessoas:['duanni','alan','ronaldo','sueli'],divisao:{duanni:50,alan:50},diaCorte:8,cartaoStatus:[],devoIds:[],devoConfig:{titulo:'💕 cartão do meu amor',legenda:'despesas minhas no cartão dele · subtraído do total'},customData:[],receitaMensal:0,receitaPorMes:{},receitaAlan:0,receitaAlanPorMes:{},bancosAlan:[],simulacoes:[],caixa:{},aluguel:{},aluguelDescontos:[],amorItems:[],manualCards:{},conferencia:{},categorias:[{id:'compras',nome:'Compras',icone:'🛒'},{id:'alimentacao',nome:'Alimentação',icone:'🍔'},{id:'assinaturas',nome:'Assinaturas',icone:'📝'},{id:'streamings',nome:'Streamings',icone:'📺'},{id:'saude',nome:'Saúde/Beleza',icone:'💊'},{id:'lazer',nome:'Lazer',icone:'🎮'},{id:'presentes',nome:'Presentes',icone:'🎁'},{id:'snow',nome:'Snow 🐶',icone:'🐶'},{id:'poupanca',nome:'Poupança',icone:'🏦'},{id:'outros',nome:'Outros',icone:'📦'}]};
 let currentMonth=new Date().toISOString().slice(0,7);
 let sharedMonth=getDefaultMesInicio(); // Compartilhado: respeita o dia de corte configurado
 let currentPage='page-home';
@@ -1226,7 +1229,7 @@ function deleteExpense(id){if(!confirm('Excluir?'))return;DATA.cartao=DATA.carta
 // ===== PERSONAL EXPENSES =====
 function openPersonalExpenseModal(person,editId){
   document.getElementById('pePerson').value=person;document.getElementById('peEditId').value=editId||'';
-  document.getElementById('peBanco').innerHTML=(DATA.bancos||[]).map(b=>`<option value="${b}">${b}</option>`).join('');
+  document.getElementById('peBanco').innerHTML=(person==='alan'?(DATA.bancosAlan||[]):(DATA.bancos||[])).map(b=>`<option value="${b}">${b}</option>`).join('');
   document.getElementById('peCategoria').innerHTML=(DATA.categorias||[]).map(c=>`<option value="${c.id}">${c.icone} ${c.nome}</option>`).join('');
   const _todayDay=new Date().getDate();
   if(editId){const exp=(DATA.pessoal||[]).find(e=>e.id===editId);if(exp){document.getElementById('peDesc').value=exp.descricao||'';document.getElementById('peValor').value=exp.valor||'';document.getElementById('peTipo').value=exp.tipo||'recorrente';document.getElementById('peParcelas').value=exp.parcelas||1;document.getElementById('peMesInicio').value=exp.mesInicio||currentMonth;document.getElementById('peDia').value=exp.dia||_todayDay;document.getElementById('peCategoria').value=exp.categoria||'outros';document.getElementById('peBanco').value=exp.banco||'';document.getElementById('peObs').value=exp.obs||'';}}
@@ -1748,8 +1751,8 @@ function renderAlan(){
   const totalDescontado=devoVal+(-amorAdjust);
   const pExps=getPersonalExpensesForMonth('alan',currentMonth).filter(e=>!e._metaRef).sort((a,b)=>(parseInt(a.dia)||0)-(parseInt(b.dia)||0));
   const pTotal=pExps.reduce((s,e)=>s+getMonthValue(e),0);
-  const final_=ct+at-totalDescontado+manT+pTotal;
-  const saldoLivre=getReceitaAlanDoMes(currentMonth)-final_;
+  const final_=ct+at-totalDescontado+manT;
+  const saldoLivre=getReceitaAlanDoMes(currentMonth)-final_-pTotal;
 
   // Devo config
   if(!DATA.devoConfig)DATA.devoConfig={titulo:'💕 cartão do meu amor',legenda:'despesas minhas no cartão dele · subtraído do total'};
@@ -2225,6 +2228,11 @@ function renderConfig(){
   if(rml){const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];const[y,mo]=currentMonth.split('-').map(Number);rml.textContent=monthNames[mo-1]+'/'+y;}
   
   // Render bancos configuration
+  const bea=document.getElementById('configBancosAlan');
+  if(bea){
+    if(!DATA.bancosAlan)DATA.bancosAlan=[];
+    bea.innerHTML=DATA.bancosAlan.map((b,i)=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="flex:1;font-weight:600;font-size:13px;">${b}</span><button class="btn-icon" onclick="deleteBancoAlan(${i})" style="color:var(--danger)">✕</button></div>`).join('');
+  }
   const be=document.getElementById('configBancos');
   if(be){
     if(!DATA.bancos)DATA.bancos=[];
@@ -2386,8 +2394,10 @@ function updatePessoa(idx,v){
 function updateCartao(idx,novoNome){const novoNomeLower=novoNome.toLowerCase().trim();if(!novoNomeLower){renderConfig();return;}const nomeAntigo=DATA.cartoesBanco[idx];if(nomeAntigo===novoNomeLower)return;DATA.cartoesBanco[idx]=novoNomeLower;(DATA.cartao||[]).forEach(e=>{if(e.cartao===nomeAntigo)e.cartao=novoNomeLower;});if(currentCartao===nomeAntigo)currentCartao=novoNomeLower;showToast('Cartão atualizado');scheduleSave();renderAll();}
 function addCartao(){const n=document.getElementById('newCartaoName').value.trim();if(!n)return;if(!DATA.cartoesBanco.includes(n))DATA.cartoesBanco.push(n);document.getElementById('newCartaoName').value='';scheduleSave();renderAll();showToast('Adicionado');}
 function deleteCartao(idx){const n=DATA.cartoesBanco[idx];if(!confirm(`Excluir "${n}"?`))return;DATA.cartoesBanco.splice(idx,1);DATA.cartao=(DATA.cartao||[]).filter(e=>e.cartao!==n);if(currentCartao===n)currentCartao=DATA.cartoesBanco[0]||'';scheduleSave();renderAll();}
+function addBancoAlan(){const n=document.getElementById('newBancoAlanName').value.trim();if(!n)return;if(!DATA.bancosAlan)DATA.bancosAlan=[];if(!DATA.bancosAlan.includes(n))DATA.bancosAlan.push(n);document.getElementById('newBancoAlanName').value='';scheduleSave();renderConfig();showToast('Banco adicionado');}
+function deleteBancoAlan(idx){if(!DATA.bancosAlan)DATA.bancosAlan=[];const n=DATA.bancosAlan[idx];if(!confirm(`Excluir banco "${n}" do Alan?`))return;DATA.bancosAlan.splice(idx,1);DATA.pessoal=(DATA.pessoal||[]).filter(e=>!(e.pessoa==='alan'&&e.banco===n));scheduleSave();renderAll();showToast('Banco removido');}
 function addBanco(){const n=document.getElementById('newBancoName').value.trim();if(!n)return;if(!DATA.bancos)DATA.bancos=[];if(!DATA.bancos.includes(n))DATA.bancos.push(n);document.getElementById('newBancoName').value='';scheduleSave();renderConfig();showToast('Banco adicionado');}
-function deleteBanco(idx){const n=DATA.bancos[idx];if(!confirm(`Excluir banco "${n}"?`))return;if(!DATA.bancos)DATA.bancos=[];DATA.bancos.splice(idx,1);DATA.pessoal=(DATA.pessoal||[]).filter(e=>e.banco!==n);scheduleSave();renderAll();showToast('Banco removido');}
+function deleteBanco(idx){const n=DATA.bancos[idx];if(!confirm(`Excluir banco "${n}"?`))return;if(!DATA.bancos)DATA.bancos=[];DATA.bancos.splice(idx,1);DATA.pessoal=(DATA.pessoal||[]).filter(e=>e.pessoa==='alan'||e.banco!==n);scheduleSave();renderAll();showToast('Banco removido');}
 function addCategoria(){
   const nome=document.getElementById('newCategoriaNome').value.trim();
   const icone=document.getElementById('newCategoriaIcone').value.trim()||'📦';
